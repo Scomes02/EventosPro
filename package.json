@@ -1,0 +1,16 @@
+{
+  "name": "eventospro",
+  "version": "2.0.0",
+  "description": "EventosPro: venta de entradas con mapa de butacas. Front en HTML/CSS/JS, API serverless en Vercel y PostgreSQL.",
+  "private": true,
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "dev": "node dev.js",
+    "seed": "node db/seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1"
+  }
+}
