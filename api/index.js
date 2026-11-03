@@ -2,14 +2,16 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { query, withTransaction } = require('../lib/db');
+const { query, withTransaction, ensureSeeded } = require('../lib/db');
 
 const MAX_ENTRADAS_POR_COMPRA = 10;
 
+// Si no se configuró JWT_SECRET, se deriva una clave de la cadena de conexión
+// (que ya es secreta). Así el deploy funciona sin pasos extra; igual conviene definirla.
 function jwtSecret() {
-  const s = process.env.JWT_SECRET;
-  if (s) return s;
-  if (process.env.VERCEL) throw httpError(500, 'Falta configurar JWT_SECRET en Vercel.');
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  const db = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  if (db) return crypto.createHash('sha256').update('eventospro-jwt:' + db).digest('hex');
   return 'solo-para-desarrollo-local';
 }
 
@@ -78,6 +80,7 @@ module.exports = async function handler(req, res) {
   const q = req.query || {};
 
   try {
+    await ensureSeeded();
     const [a, b, c] = segs;
 
     // ---------- catálogo ----------

@@ -44,14 +44,12 @@ vercel.json       redirige /api/* a la función
 
 ## Publicar en Vercel
 
-1. Subí esta carpeta a un repositorio de GitHub.
-2. En Vercel: **Add New → Project** e importá el repositorio (framework: *Other*, sin build command, output `public`).
-3. En el proyecto: **Storage → Create Database → Neon (Postgres)** y conectala. Vercel crea `DATABASE_URL` sola.
-4. En **Settings → Environment Variables** agregá `JWT_SECRET` y `ADMIN_KEY`.
-5. Copiá la `DATABASE_URL` de Neon en tu `.env.local` y corré `npm run seed` una vez desde tu PC.
-6. **Redeploy**. Listo.
+1. Importá el repositorio en Vercel (framework *Other*; `vercel.json` ya define todo).
+2. En el proyecto: **Storage → Create Database → Neon (Postgres)** y conectala. Vercel crea `DATABASE_URL` sola.
+3. Opcional: en **Settings → Environment Variables** agregá `JWT_SECRET` (si no está, se deriva de la conexión) y `ADMIN_KEY` (sin ella, el panel admin queda desactivado).
+4. **Redeploy**. La primera visita crea las tablas y carga la demo sola.
 
-Para reiniciar la demo (butacas, compras, fechas), volvé a correr `npm run seed`.
+La demo se reinicia sola cuando quedan menos de 4 eventos por venir. Para reiniciarla a mano: `npm run seed` con la `DATABASE_URL` en `.env.local`.
 
 ## Endpoints
 

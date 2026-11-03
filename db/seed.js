@@ -1,5 +1,5 @@
 // Crea el esquema y carga datos de demostración (todo ficticio).
-require('../lib/env');
+if (require.main === module) require('../lib/env');
 // Uso:  DATABASE_URL=postgres://... node db/seed.js
 // Las fechas de los eventos se calculan desde HOY, así la demo nunca queda "vencida":
 // volvé a correr este script cuando quieras reiniciar la demo.
@@ -114,11 +114,8 @@ async function insertMany(db, table, cols, rows, returning) {
   return out;
 }
 
-async function main() {
-  if (!process.env.DATABASE_URL) throw new Error('Falta la variable DATABASE_URL');
-  const ssl = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false };
-  const db = new Client({ connectionString: process.env.DATABASE_URL, ssl });
-  await db.connect();
+// Recibe un cliente de pg ya conectado. La API la usa para cargar la demo sola.
+async function seed(db) {
   const rand = rng(2026);
 
   await db.query(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
@@ -216,8 +213,18 @@ async function main() {
 
   await db.query('COMMIT');
   const { rows: [c] } = await db.query('SELECT COUNT(*)::int AS n FROM entrada');
-  console.log(`Listo: ${eventos.length} eventos, ${c.n} entradas. Cuenta demo: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
+  return { eventos: eventos.length, entradas: c.n };
+}
+
+async function main() {
+  if (!process.env.DATABASE_URL) throw new Error('Falta la variable DATABASE_URL');
+  const ssl = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false };
+  const db = new Client({ connectionString: process.env.DATABASE_URL, ssl });
+  await db.connect();
+  const r = await seed(db);
+  console.log(`Listo: ${r.eventos} eventos, ${r.entradas} entradas. Cuenta demo: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
   await db.end();
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+module.exports = { seed };
+if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });
